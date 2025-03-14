@@ -56,3 +56,38 @@ class GameBoard extends StatelessWidget {
     );
   }
 }
+
+class CardTile extends StatelessWidget {
+  final int index;
+  const CardTile({super.key, required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    var gameProvider = Provider.of<CardGameProvider>(context);
+    var card = gameProvider.cards[index];
+
+    return GestureDetector(
+      onTap: () => gameProvider.flipCard(index),
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 500),
+        decoration: BoxDecoration(
+          color: card.isMatched ? Colors.green : Colors.blue,
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: Center(
+          child:
+              card.isFaceUp || card.isMatched
+                  ? Text(
+                    card.value,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  )
+                  : Icon(Icons.question_mark, color: Colors.white, size: 30),
+        ),
+      ),
+    );
+  }
+}
