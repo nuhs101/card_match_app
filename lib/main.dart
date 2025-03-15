@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:developer';
 import 'dart:async';
 
 void main() {
@@ -89,5 +90,95 @@ class CardTile extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class CardModel {
+  String value;
+  bool isFaceUp;
+  bool isMatched;
+  CardModel({
+    required this.value,
+    this.isFaceUp = false,
+    this.isMatched = false,
+  });
+}
+
+class CardGameProvider extends ChangeNotifier {
+  List<CardModel> _cards = [];
+  List<CardModel> get cards => _cards;
+
+  CardModel? firstSelected;
+  int? firstIndex;
+
+  CardGameProvider() {
+    _initializeCards();
+  }
+
+  void _initializeCards() {
+    List<String> values = [
+      "A",
+      "A",
+      "B",
+      "B",
+      "C",
+      "C",
+      "D",
+      "D",
+      "E",
+      "E",
+      "F",
+      "F",
+      "G",
+      "G",
+      "H",
+      "H",
+    ];
+    values.shuffle();
+    _cards = values.map((val) => CardModel(value: val)).toList();
+    notifyListeners();
+  }
+
+  void flipCard(int index) {
+    if (_cards[index].isMatched || _cards[index].isFaceUp) return;
+
+    _cards[index].isFaceUp = true;
+    notifyListeners();
+
+    if (firstSelected == null) {
+      firstSelected = _cards[index];
+      firstIndex = index;
+    } else {
+      if (firstSelected!.value == _cards[index].value && firstIndex != index) {
+        _cards[index].isMatched = true;
+        _cards[firstIndex!].isMatched = true;
+      } else {
+        Future.delayed(Duration(seconds: 1), () {
+          _cards[index].isFaceUp = false;
+          _cards[firstIndex!].isFaceUp = false;
+          notifyListeners();
+        });
+      }
+      firstSelected = null;
+      firstIndex = null;
+    }
+    notifyListeners();
+
+    if (_cards.every((card) => card.isMatched)) {
+      Future.delayed(Duration(milliseconds: 500), () {
+        showWinDialog();
+      });
+    }
+  }
+
+  void showWinDialog() {
+    log("You won!");
+  }
+
+  void resetGame() {
+    firstSelected = null;
+    firstIndex = null;
+    _initializeCards();
+    notifyListeners();
   }
 }
